@@ -1,4 +1,4 @@
-name: Port Check
+name: 检测KMS状态
 
 on:
   schedule:
@@ -15,6 +15,9 @@ jobs:
 
       - name: Check if port 1688 is open
         run: |
+          # 获取当前日期和时间
+          CHECK_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
           # 检测端口是否开放
           if nc -zv kms.jihuowin.com 1688; then
             echo "<h1>Port 1688 is OPEN on kms.jihuowin.com</h1>" > index.html
@@ -22,12 +25,15 @@ jobs:
             echo "<h1>Port 1688 is CLOSED on kms.jihuowin.com</h1>" > index.html
           fi
 
+          # 添加检测时间到文件
+          echo "<p>Checked at: $CHECK_TIME</p>" >> index.html
+
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
           git add index.html
-          git commit -m "Update port status"
+          git commit -m "Update port status and time"
         continue-on-error: true
 
       - name: Push changes
