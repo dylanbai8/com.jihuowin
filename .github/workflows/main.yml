@@ -15,17 +15,17 @@ jobs:
 
     - name: Check if port 1688 is open
       run: |
-        result=$(nc -zv kms.jihuowin.com 1688 2>&1)
+        result=$(nc -zv kms.jihuowin.com 1688 2>&1 || true)
         if echo "$result" | grep -q "succeeded"; then
-          echo "Port 1688 is open" > result.html
+          echo "<html><body><h1>Port 1688 is open</h1></body></html>" > result.html
         else
-          echo "Port 1688 is closed" > result.html
+          echo "<html><body><h1>Port 1688 is closed</h1></body></html>" > result.html
         fi
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
-        path: result.html
+        path: result.html  # 指定文件而非目录
 
   deploy:
     runs-on: ubuntu-latest
