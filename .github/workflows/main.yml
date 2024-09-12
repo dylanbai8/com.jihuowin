@@ -1,4 +1,4 @@
-name: 检测KMS状态
+name: Port Check
 
 on:
   schedule:
@@ -28,10 +28,17 @@ jobs:
           # 添加检测时间到文件
           echo "<p>Checked at: $CHECK_TIME</p>" >> index.html
 
-      - name: Commit changes
+      - name: Configure git
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
+
+      - name: Pull latest changes
+        run: |
+          git pull origin main --rebase
+
+      - name: Commit changes
+        run: |
           git add index.html
           git commit -m "Update port status and time"
         continue-on-error: true
