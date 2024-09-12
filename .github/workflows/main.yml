@@ -1,35 +1,37 @@
-name: Check KMS Port
+name: Port Check
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # 每30分钟运行一次
-  workflow_dispatch:
+    - cron: '0 * * * *' # 每小时运行一次
+  workflow_dispatch: # 手动触发
 
 jobs:
-  check-port:
+  check_port:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Check if port 1688 is open
-      run: |
-        result=$(nc -zv kms.jihuowin.com 1688 2>&1 || true)
-        if echo "$result" | grep -q "succeeded"; then
-          echo "<html><body><h1>Port 1688 is open</h1></body></html>" > result.html
-        else
-          echo "<html><body><h1>Port 1688 is closed</h1></body></html>" > result.html
-        fi
+      - name: Check if port 1688 is open
+        run: |
+          # 检测端口是否开放
+          if nc -zv kms.jihuowin.com 1688; then
+            echo "<h1>Port 1688 is OPEN on kms.jihuowin.com</h1>" > index.html
+          else
+            echo "<h1>Port 1688 is CLOSED on kms.jihuowin.com</h1>" > index.html
+          fi
 
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        path: result.html  # 指定文件而非目录
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          git add index.html
+          git commit -m "Update port status"
+        continue-on-error: true
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: check-port
-    steps:
-    - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v2
+      - name: Push changes
+        run: |
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
