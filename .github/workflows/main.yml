@@ -1,0 +1,35 @@
+name: Check KMS Port
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # 每30分钟运行一次
+  workflow_dispatch:
+
+jobs:
+  check-port:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Check if port 1688 is open
+      run: |
+        result=$(nc -zv kms.jihuowin.com 1688 2>&1)
+        if echo "$result" | grep -q "succeeded"; then
+          echo "Port 1688 is open" > result.html
+        else
+          echo "Port 1688 is closed" > result.html
+        fi
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: result.html
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: check-port
+    steps:
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v2
