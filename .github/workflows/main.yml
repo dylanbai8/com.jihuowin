@@ -35,13 +35,25 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
 
-      - name: Pull latest changes and handle conflicts
+      - name: Stash changes before pulling
         run: |
-          git pull origin main --rebase || git rebase --abort # 如果冲突无法自动解决，放弃重排
-          git pull origin main # 再次尝试普通拉取
+          # 暂存当前更改
+          git add index.html
+          git stash
+
+      - name: Pull latest changes
+        run: |
+          # 拉取并重排最新的远程更改
+          git pull origin main --rebase
+
+      - name: Apply stashed changes
+        run: |
+          # 应用暂存的更改
+          git stash pop || echo "No stashed changes to apply"
 
       - name: Commit changes
         run: |
+          # 提交更改
           git add index.html
           git commit -m "Update port status and time" || echo "No changes to commit"  # 如果没有变化，不会提交
         continue-on-error: true
