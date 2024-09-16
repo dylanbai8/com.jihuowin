@@ -44,7 +44,7 @@ jobs:
             add_response=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
               -H "Authorization: Bearer $CF_API_TOKEN" \
               -H "Content-Type: application/json" \
-              --data '{"type":"A","name":"kms.v0v.bid","content":"'"1.1.1.1"'","ttl":120,"proxied":false}')
+              --data '{"type":"A","name":"kms6.v0v.bid","content":"'"1.1.1.1"'","ttl":120,"proxied":false}')
 
             echo "Add A record response: $add_response"
 
@@ -75,5 +75,5 @@ jobs:
         done < ip.txt
 
     env:
-      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-      CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+      CF_API_TOKEN: 'BnDSnMUV-UApDFfkNXhHeE1dcADrD8DwzcNeotQd'
+      CF_ZONE_ID: '3fcf2880bfe3fd0b55ced76c63cb17f3'
