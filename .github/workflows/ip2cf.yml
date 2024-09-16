@@ -1,12 +1,9 @@
 name: Check IPs and Update Cloudflare
 
 on:
-  # 手动触发工作流
-  workflow_dispatch:
-  
-  # 每周运行一次，星期一 00:00 运行（可根据需求调整时间）
+  workflow_dispatch:  # 手动触发
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1'  # 每周一次
 
 jobs:
   check-ips:
@@ -29,7 +26,7 @@ jobs:
       id: check_ips
       run: |
         while IFS= read -r ip; do
-          # Trim任何前导/尾随空白字符
+          # 去除额外的空格或换行符
           ip=$(echo "$ip" | tr -d '\r\n ')
           
           # 跳过空行
@@ -39,7 +36,7 @@ jobs:
 
           echo "Checking IP: $ip"
 
-          # 使用nc命令检查IP 1688端口是否可达，设置超时时间为5秒
+          # 检测端口是否开放
           if nc -zv -w 5 "$ip" 1688; then
             echo "IP $ip: Port 1688 is open."
             
@@ -47,7 +44,7 @@ jobs:
             add_response=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
               -H "Authorization: Bearer $CF_API_TOKEN" \
               -H "Content-Type: application/json" \
-              --data '{"type":"A","name":"kms.v0v.bid","content":'$ip',"ttl":120,"proxied":false}')
+              --data '{"type":"A","name":"kms.v0v.bid","content":"'"$ip"'","ttl":120,"proxied":false}')
 
             echo "Add A record response: $add_response"
 
@@ -78,5 +75,5 @@ jobs:
         done < ip.txt
 
     env:
-      CF_API_TOKEN: "BnDSnMUV-UApDFfkNXhHeE1dcADrD8DwzcNeotQd"
-      CF_ZONE_ID: "3fcf2880bfe3fd0b55ced76c63cb17f3"
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
