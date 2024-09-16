@@ -23,6 +23,7 @@ jobs:
 
     - name: Read and check IPs
       id: check_ips
+
       run: |
         while read ip; do
           # 使用nc命令检查IP 1688端口是否可达，设置超时时间为5秒
@@ -37,18 +38,24 @@ jobs:
               | jq .
           else
             echo "IP $ip: Port 1688 is not open."
-            # 删除已有的A记录
-            record_id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records?type=A&name=kms.v0v.bid&content=$ip" \
+            # 获取DNS记录ID
+            echo "Fetching DNS record for IP $ip..."
+            response=$(curl -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records?type=A&name=kms.v0v.bid&content=$ip" \
               -H "Authorization: Bearer $CF_API_TOKEN" \
-              -H "Content-Type: application/json" | jq -r '.result[0].id')
+              -H "Content-Type: application/json")
+              
+            echo "Response: $response"
 
+            record_id=$(echo $response | jq -r '.result[0].id')
+            
             if [ "$record_id" != "null" ]; then
+              echo "Deleting DNS record with ID: $record_id"
               curl -X DELETE "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$record_id" \
                 -H "Authorization: Bearer $CF_API_TOKEN" \
                 -H "Content-Type: application/json"
               echo "Deleted DNS record for $ip"
             else
-              echo "No DNS record found for $ip"
+              echo "No DNS record found for IP $ip"
             fi
           fi
         done < ip.txt
