@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y curl jq netcat dos2unix
+        sudo apt-get install -y curl jq netcat-openbsd dos2unix
 
     - name: Ensure ip.txt has Unix line endings
       run: |
@@ -93,6 +93,7 @@ jobs:
             fi
 
           fi
+          sleep $((RANDOM % 3 + 1))
         done < ip.txt
 
     env:
